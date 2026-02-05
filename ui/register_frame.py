@@ -3,21 +3,30 @@ import cv2
 from PIL import Image, ImageTk
 import threading
 import time
+import logging
+from typing import Optional, List
+import numpy as np
 
 class RegisterFrame(ctk.CTkFrame):
     def __init__(self, master, face_recognizer):
         super().__init__(master)
+        self.logger = logging.getLogger(__name__)
         self.face_recognizer = face_recognizer
-        self.cap = None
-        self.is_running = False
-        self.loading_camera = False
-        self.current_frame_data = None
-        self.capture_frames = []
-        self.is_capturing = False
+        
+        self.cap: Optional[cv2.VideoCapture] = None
+        self.is_running: bool = False
+        self.loading_camera: bool = False
+        self.current_frame_data: Optional[np.ndarray] = None
+        self.capture_frames: List[np.ndarray] = []
+        self.is_capturing: bool = False
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Initialize all UI components."""
         # Left Side: Camera
         self.camera_frame = ctk.CTkFrame(self)
         self.camera_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
@@ -29,7 +38,11 @@ class RegisterFrame(ctk.CTkFrame):
         self.form_frame = ctk.CTkFrame(self)
         self.form_frame.grid(row=0, column=1, padx=20, pady=20, sticky="ns")
         
-        self.title_label = ctk.CTkLabel(self.form_frame, text="Register New User", font=ctk.CTkFont(size=20, weight="bold"))
+        self.title_label = ctk.CTkLabel(
+            self.form_frame, 
+            text="Register New User", 
+            font=ctk.CTkFont(size=20, weight="bold")
+        )
         self.title_label.pack(pady=20, padx=20)
         
         self.name_entry = ctk.CTkEntry(self.form_frame, placeholder_text="Full Name")
@@ -38,7 +51,11 @@ class RegisterFrame(ctk.CTkFrame):
         self.id_entry = ctk.CTkEntry(self.form_frame, placeholder_text="Employee ID")
         self.id_entry.pack(pady=10, padx=20, fill="x")
         
-        self.capture_btn = ctk.CTkButton(self.form_frame, text="Start Training (Look at Camera)", command=self.start_capture_sequence)
+        self.capture_btn = ctk.CTkButton(
+            self.form_frame, 
+            text="Start Training (Look at Camera)", 
+            command=self.start_capture_sequence
+        )
         self.capture_btn.pack(pady=20, padx=20, fill="x")
         
         self.progress_bar = ctk.CTkProgressBar(self.form_frame)
@@ -50,32 +67,41 @@ class RegisterFrame(ctk.CTkFrame):
         self.status_label.pack(pady=10)
 
     def start_camera(self):
+        """Start the camera in a background thread."""
         if not self.is_running and not self.loading_camera:
             self.loading_camera = True
             self.camera_label.configure(text="Initializing Video Feed... 📷")
             threading.Thread(target=self._init_camera, daemon=True).start()
 
     def _init_camera(self):
+        """Internal method to initialize OpenCV camera."""
         try:
-            new_cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) # Faster on Windows
+            # CAP_DSHOW is generally faster on Windows
+            new_cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) 
             if new_cap.isOpened():
                 self.cap = new_cap
                 self.is_running = True
+                self.logger.info("Camera initialized successfully.")
                 self.after(0, self.update_camera)
             else:
+                self.logger.error("Failed to open camera.")
                 self.after(0, lambda: self.camera_label.configure(text="Camera Failed to Open"))
         except Exception as e:
+             self.logger.error(f"Camera error: {e}")
              self.after(0, lambda: self.camera_label.configure(text=f"Camera Error: {e}"))
         finally:
             self.loading_camera = False
 
     def stop_camera(self):
+        """Stop the camera and release resources."""
         self.is_running = False
         if self.cap:
             self.cap.release()
             self.cap = None
+            self.logger.info("Camera stopped.")
 
     def update_camera(self):
+        """Read frame from camera and update UI."""
         if self.is_running and self.cap:
             ret, frame = self.cap.read()
             if ret:
@@ -92,12 +118,13 @@ class RegisterFrame(ctk.CTkFrame):
                 imgtk = ctk.CTkImage(light_image=img, dark_image=img, size=(400, 300))
                 
                 self.camera_label.configure(image=imgtk, text="")
-                self.camera_label.image = imgtk
+                self.camera_label.image = imgtk # Keep reference
             
             if self.is_running:
                 self.after(20, self.update_camera)
 
     def start_capture_sequence(self):
+        """Begin the face capture training process."""
         name = self.name_entry.get()
         emp_id = self.id_entry.get()
         
@@ -117,7 +144,8 @@ class RegisterFrame(ctk.CTkFrame):
         # Start capture thread
         threading.Thread(target=self._capture_frames_thread, args=(name, emp_id), daemon=True).start()
 
-    def _capture_frames_thread(self, name, emp_id):
+    def _capture_frames_thread(self, name: str, emp_id: str):
+        """Capture multiple frames and trigger registration."""
         self.is_capturing = True
         self.capture_frames = []
         target_frames = 30
@@ -142,7 +170,8 @@ class RegisterFrame(ctk.CTkFrame):
         
         self.after(0, lambda: self._finish_registration(success, msg))
 
-    def _finish_registration(self, success, msg):
+    def _finish_registration(self, success: bool, msg: str):
+        """Handle post-registration UI updates."""
         self.capture_btn.configure(state="normal", text="Start Training")
         self.progress_bar.pack_forget()
         

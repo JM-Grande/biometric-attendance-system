@@ -1,102 +1,98 @@
-# 📸 Enterprise Biometric Attendance System
+# 🔐 Biometric Attendance System (Enterprise Edition)
 
-A high-performance, offline-first attendance application featuring real-time face recognition, enterprise-grade database management, and a modern dark-mode UI.
+A professional-grade, offline-first attendance management system powered by Face Recognition (OpenCV LBPH).
+Built with Python and CustomTkinter for a modern, responsive UI.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green)
-![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-orange)
-
-## ✨ Features
-
-- **🚀 Instant Recognition**: Uses LBPH (Local Binary Patterns Histograms) for fast and efficient face matching.
-- **🛡️ Enterprise Grade Registration**: Captures **30+ samples** per user in a burst sequence to ensure high accuracy across different angles.
-- **⏱️ Smart Attendance**:
-  - **Duplicate Prevention**: Automatically rejects duplicate check-ins for the same day.
-  - **Visual Feedback**: Green/Orange/Red indicators on the live feed for instant status.
-- **💾 Hybrid Database**:
-  - **Offline First**: All data stored locally in SQLite (`attendance.db`).
-  - **Cloud Ready**: Optional built-in support for **Supabase** sync.
-- **🎨 Modern UI**: Sleek, responsive interface built with CustomTkinter.
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-## 🛠️ Installation Guide (Error-Free)
+## 🌟 Key Features
 
-### 1. Prerequisites
-*   **Python 3.10 or newer** installed.
-*   *(Optional)* **Visual Studio Build Tools** (only if you plan to switch back to `dlib`, but this version works without it!).
+*   **⚡ Instant Recognition**: Uses highly optimized LBPH (Local Binary Patterns Histograms) for real-time face matching.
+*   **📸 Smart Registration**: Captures a 30-frame burst to build a robust face model for each employee.
+*   **🛡️ Duplicate Prevention**: Automatically prevents employees from clocking in twice on the same day.
+*   **📊 Live Dashboard**: View real-time logs and attendance statistics.
+*   **☁️ Hybrid Database**: Runs 100% offline with SQLite. Optional Supabase cloud sync built-in.
+*   **🎨 Dark Mode UI**: Professional, eye-friendly interface.
 
-### 2. Automatic Setup (Windows)
-We have included a "One-Click" installer script.
+---
 
-1.  Open the folder `attendance-app`.
+## 🚀 Quick Start (Windows)
+
+No technical skills required. Just run the launcher.
+
+1.  **Clone or Download** this repository.
 2.  Double-click **`run_app.bat`**.
-    *   This will automatically create a virtual environment.
-    *   Install all necessary libraries.
-    *   Launch the application.
+    *   This will automatically create a virtual environment, install dependencies, and launch the app.
 
-### 3. Manual Setup (Command Line)
-If you prefer the terminal:
+---
 
-```powershell
-# 1. Navigate to the project
-cd attendance-app
+## 🛠️ Manual Installation
 
-# 2. Create Virtual Environment
+If you prefer the command line:
+
+```bash
+# 1. Create a virtual environment
 python -m venv venv
 
-# 3. Activate Environment
+# 2. Activate it
 .\venv\Scripts\activate
 
-# 4. Install Dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 5. Run the App
+# 4. Run the app
 python main.py
 ```
 
 ---
 
-## 📖 How to Use
+## 📖 User Guide
 
-### 1️⃣ Registering a New Employee
-1.  Launch the app and navigate to the **"Register User"** tab.
-2.  Enter the **Full Name** and **Employee ID**.
-3.  Click **"Start Training"**.
-4.  **Look at the camera**: The system will automatically capture **30 frames** (takes ~2 seconds).
-    *   *Tip: Move your head slightly for better accuracy.*
-5.  Wait for the "Registration Successful!" message.
+### 1. Register a New User
+*   Navigate to the **"Register User"** tab.
+*   Enter **Full Name** and **Employee ID**.
+*   Click **"Start Training"**.
+*   Look at the camera. The system will capture **30 frames** (approx. 1.5s) to learn your face.
+*   Wait for the "Success" message.
 
-### 2️⃣ Taking Attendance
-1.  Navigate to the **"Take Attendance"** tab.
-2.  The camera will start automatically.
-3.  Simply walk in front of the camera.
-    *   **Green Box**: "Welcome! Marked Present." ✅
-    *   **Orange Box**: "You already took attendance today." ⚠️
-    *   **Red Box**: "Unknown" (Please register). ❌
+### 2. Take Attendance
+*   Navigate to the **"Take Attendance"** tab.
+*   The camera will activate.
+*   Simply walk in front of the camera.
+*   **Green Box**: Attendance Logged! ✅
+*   **Orange Box**: You have already clocked in today. ⚠️
+*   **Red Box**: Unknown Face. ❌
 
-### 3️⃣ Viewing Logs
-1.  Go to the **"Home"** tab.
-2.  See the **Live Stats** for total users and today's attendance count.
-3.  View the list of **Recent Activity**.
+### 3. View Logs
+*   The **Home** dashboard shows the last 10 records and total count for the day.
 
 ---
 
-## ☁️ Cloud Sync (Optional)
-To enable Cloud Sync with Supabase:
-1.  Open `utils/config.py`.
-2.  Set `USE_CLOUD = True`.
-3.  Add your `SUPABASE_URL` and `SUPABASE_KEY`.
+## ⚙️ Configuration
+
+Check `utils/config.py` to customize:
+*   **`THEME_MODE`**: "System", "Dark", or "Light".
+*   **`USE_CLOUD`**: Set to `True` to enable Supabase syncing.
+*   **`SUPABASE_URL`**: Your cloud database credentials.
 
 ---
 
 ## ❓ Troubleshooting
 
-**Q: Camera not starting?**
-A: Ensure no other app (Zoom, Teams) is using the webcam.
+**Camera not starting?**
+*   Ensure no other app (Zoom, Teams) is using the webcam.
+*   If you have multiple cameras, edit `ui/register_frame.py` and change `cv2.VideoCapture(0)` to `cv2.VideoCapture(1)`.
 
-**Q: "No module named..." error?**
-A: Run `run_app.bat` again to ensure dependencies are installed.
+**"Null Bytes" Error?**
+*   This has been fixed in the latest release. Ensure you are using the clean files from this repo.
 
-**Q: Face not recognized?**
-A: Try registering again with better lighting. The system learns from the data you give it!
+---
+
+## 🏗️ Tech Stack
+*   **GUI**: CustomTkinter
+*   **Computer Vision**: OpenCV (opencv-contrib-python)
+*   **Database**: SQLite3
+*   **Language**: Python 3.10+

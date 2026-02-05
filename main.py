@@ -1,21 +1,24 @@
 import sys
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-print("Importing UI...")
-from ui.main_window import MainWindow
-print("UI Imported.")
+try:
+    from ui.main_window import MainWindow
+except ImportError as e:
+    logging.error(f"Failed to import UI components: {e}")
+    sys.exit(1)
 
 if __name__ == "__main__":
-    print("Initializing Application...")
+    logging.info("Initializing Biometric Attendance System...")
     try:
         app = MainWindow()
-        print("Main Loop Starting...")
         app.mainloop()
     except Exception as e:
-        print(f"CRASHED: {e}")
-        import traceback
-        traceback.print_exc()
-    input("Press Enter to exit...")
+        logging.critical(f"Application crashed: {e}", exc_info=True)
+        input("Press Enter to close...")
